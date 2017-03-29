@@ -15,7 +15,7 @@ void Blinking::detectStartCode(){
   int lightValue = lightLevel; //Will be changed to adapt to differents brightnesses 
 
   while(!start){
-    if(micros() - time2 >  1000000.0/480.0){
+    if(micros() - time2 >  1000000.0/1000.0){
       time2 = micros();     
       sensorValue = analogRead(lightsensorPin);
       //Serial.println(sensorValue);
@@ -58,23 +58,34 @@ void Blinking::detectStartCode(){
     }
   }
  Serial.println("Start code detected");
- time2 = micros();
 }
 
 void Blinking::synchronise(){
+  int sampleSize = 60;
   long sum = 0;
-  double a = 0;
-  double mean;
-  long deb = micros();
+  double a = 1;
+  //double mean;
+  long deb;
   long time = millis();
   long t;
-  int currentValue;
-  int b = 0;
-  Bit temp[1];
+  int currentValue = 0;
+  int b = 1;
+  //Bit temp[1];
+  
+  while (b != currentValue){
+      t = millis();
+      if (t - time >  1){
+        time = t;
+        b = analogRead(lightsensorPin) > lightLevel ? 1 : 0;
+      }
+  }
 
-  readValues(temp, 1, 0);
+  //deb = micros();
+  deb = millis();
+  //readValues(temp, 1, 0);
+  //delay(4);
 
-  while(a < 60){
+  while(a <= sampleSize){
     currentValue = b;
     while(b == currentValue){
       t = millis();
@@ -86,23 +97,26 @@ void Blinking::synchronise(){
     a+=1;
   }  
 
-  sum = (micros()-deb);
+  //sum = (micros()-deb);
+  sum = (millis()-deb);
 
   /*mean = sum/(a/(sum/1000.0));
   frequency = 1000.0/mean;*/
-  frequency = 60.0 / (sum/1000000.0);
+  //frequency = (double)sampleSize / (sum/1000000.0);
+  frequency = (double)sampleSize / (sum/1000.0);
   //frequency = 59.559261;
   lambda = 1000000.0/frequency;
 
+  begining = micros() - lambda;
   lambdaAcc = lambda;
-  begining = micros();
+  
 
   /*Serial.println("Elapsed time");
-  Serial.println(millis()-deb);
+  Serial.println(micros()-deb);
   Serial.println("Sum");
-  Serial.println(sum);
+  Serial.println(sum);*/
   Serial.println("Frequency");
-  Serial.println(frequency);*/
+  Serial.println(frequency);
 
 
   
@@ -208,5 +222,5 @@ void Blinking::readValues(Bit* buf, int nb, int dec){
         lambdaAcc += lambda;    
         count++; 
      }
-    }  
+  }  
 }
