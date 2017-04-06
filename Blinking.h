@@ -20,8 +20,8 @@ class Blinking{
 		int detectBit();
 		void readValues(Bit* buf, int nb, int dec);
 		
-		int binToDec(Bit data[8]);
-		int binToDec2(Bit data[8], int shift);
+		int binToDec(Bit* data, int size);
+		int binToDec2(Bit* data, int size, int shift);
 		int power(int a, int b);
 		
 		int lightsensorPin;
@@ -43,7 +43,7 @@ class Blinking{
 		//dataLen will contain how much "groups" of data we will transfer. dataSize is the size of one group (in Bytes).
 		//For exemple : "CODE" in ASCII =  01000011 01001111 01000100 01000101
 		//Here dataLen = 4 and dataSize = 1
-		int dataLen, dataSize;
+		int dataLen;
 
 		//Frequence of the transfer
 		//double  frequency = 59.559261;

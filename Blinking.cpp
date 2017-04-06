@@ -15,7 +15,7 @@ void Blinking::detectStartCode(){
   int lightValue = lightLevel; //Will be changed to adapt to differents brightnesses 
 
   while(!start){
-    if(micros() - time2 >  1000000.0/1000.0){
+    if(micros() - time2 >  1000){
       time2 = micros();     
       sensorValue = analogRead(lightsensorPin);
       //Serial.println(sensorValue);
@@ -64,32 +64,27 @@ void Blinking::synchronise(){
   int sampleSize = 60;
   long sum = 0;
   double a = 1;
-  //double mean;
   long deb;
-  long time = millis();
+  long time = micros();
   long t;
   int currentValue = 0;
   int b = 1;
-  //Bit temp[1];
   
   while (b != currentValue){
-      t = millis();
-      if (t - time >  1){
+      t = micros();
+      if (t - time >  350){
         time = t;
         b = analogRead(lightsensorPin) > lightLevel ? 1 : 0;
       }
   }
 
-  //deb = micros();
-  deb = millis();
-  //readValues(temp, 1, 0);
-  //delay(4);
+  deb = micros();
 
   while(a <= sampleSize){
     currentValue = b;
     while(b == currentValue){
-      t = millis();
-      if (t - time >  1){
+      t = micros();
+      if (t - time >  350){
         time = t;
         b = analogRead(lightsensorPin) > lightLevel ? 1 : 0;
       }
@@ -97,24 +92,17 @@ void Blinking::synchronise(){
     a+=1;
   }  
 
-  //sum = (micros()-deb);
-  sum = (millis()-deb);
+  sum = (micros()-deb);
 
-  /*mean = sum/(a/(sum/1000.0));
-  frequency = 1000.0/mean;*/
-  //frequency = (double)sampleSize / (sum/1000000.0);
-  frequency = (double)sampleSize / (sum/1000.0);
-  //frequency = 59.559261;
+  frequency = (double)sampleSize / (sum/1000000.0);
   lambda = 1000000.0/frequency;
 
   begining = micros() - lambda;
   lambdaAcc = lambda;
   
 
-  /*Serial.println("Elapsed time");
+  Serial.println("Elapsed time");
   Serial.println(micros()-deb);
-  Serial.println("Sum");
-  Serial.println(sum);*/
   Serial.println("Frequency");
   Serial.println(frequency);
 
@@ -129,17 +117,16 @@ void Blinking::synchronise(){
  */
 void Blinking::getHeader(){
     Bit buf[8]; 
-    //begining = begining + (begining - time2);
     
-    readValues(buf, 8, 0);
-    dataLen = binToDec(buf);
+    readValues(buf, 12, 0);
+    dataLen = binToDec(buf, 12);
 
-    readValues(buf, 4, 4);
-    dataSize = binToDec2(buf, 4);
+    /*readValues(buf, 4, 4);
+    dataSize = binToDec2(buf, 4);*/
     
     Serial.println("Header Read");//For debugging
     Serial.println(dataLen);
-    Serial.println(dataSize);
+    //Serial.println(dataSize);
 }
 
 
@@ -150,27 +137,27 @@ void Blinking::getDatas(){
   int i = 0;
   int lightValue = lightLevel;
 
-  readValues(datas, dataLen * dataSize * 8, 0);
+  readValues(datas, dataLen*8, 0);
   Serial.println("Datas Read");
 
-  for (i = 0; i < dataLen*dataSize*8; i++){//For debbugging
+  for (i = 0; i < dataLen*8; i++){//For debbugging
     Serial.print(datas[i].value);
   }
 }
 
-int Blinking::binToDec(Bit data[8]){
+int Blinking::binToDec(Bit* data, int size){
   int number = 0;
   int count = 0;
-  for(int i = 7; i >= 0; i--, count++){
+  for(int i = size-1; i >= 0; i--, count++){
     number += data[i].value*power(2, count);
   }
   return number;
 }
 
-int Blinking::binToDec2(Bit data[8], int s){
+int Blinking::binToDec2(Bit* data, int size, int s){
   int number = 0;
   int count = 0;
-  for(int i = 7; i >= s; i--, count++){
+  for(int i = size+s-1; i >= s; i--, count++){
     number += data[i].value*power(2, count);
   }
   return number;
@@ -192,16 +179,16 @@ int Blinking::detectBit(){
   float div = 5.0;
   
   for(int i = 0, count = 0, s = 2; i < 3; i++){
-	while (!read){
-		t = micros();
-		if(t - timer > s*lambda/div){
-			timer = t;
-			sum = analogRead(lightsensorPin) > lightLevel ? sum + 1 : sum;
-			read = true; 
-			s = 1;			
-		} 
-	}
-	read = false;
+  	while (!read){
+  		t = micros();
+  		if(t - timer > s*lambda/div){
+  			timer = t;
+  			sum = analogRead(lightsensorPin) > lightLevel ? sum + 1 : sum;
+  			read = true; 
+  			s = 1;			
+  		} 
+  	}
+  	read = false;
   }
 
   if (sum  > 1)
@@ -210,14 +197,14 @@ int Blinking::detectBit(){
     return 0;
 }
 
-void Blinking::readValues(Bit* buf, int nb, int dec){
+void Blinking::readValues(Bit* buf, int nb, int shifting){
   int count = 0;
   long t;
   long time = 0;
   while (count < nb){
       t = micros();
       if (t - begining >  lambdaAcc){
-        buf[count+dec].value = detectBit();
+        buf[count+shifting].value = detectBit();
         time = t;
         lambdaAcc += lambda;    
         count++; 
