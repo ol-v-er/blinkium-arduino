@@ -15,14 +15,20 @@ class Blinking{
 	private :
 		void detectStartCode();
     void synchronise(); 
-		void getHeader();
-		void getDatas();
-		int detectBit();
+		void receiveHeader();
+		void receiveDatas();
+		int readBit();
 		void readValues(Bit* buf, int nb, int dec);
-		
+
+    Bit* getDatas();
+    char** getDatasAsStrings();
+
+    void printDatasAsStrings();
+    
 		int binToDec(Bit* data, int size);
 		int binToDec2(Bit* data, int size, int shift);
 		int power(int a, int b);
+    char charOfBin(Bit* data, int shift);
 		
 		int lightsensorPin;
 		int sensorValue = 0;

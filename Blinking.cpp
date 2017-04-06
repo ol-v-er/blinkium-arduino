@@ -5,8 +5,10 @@ Blinking::Blinking(int sensorPin) : lightsensorPin(sensorPin) {}
 void Blinking::listen(){
 	detectStartCode();
   synchronise();
-	getHeader();
-	getDatas();
+	receiveHeader();
+	receiveDatas();
+
+ printDatasAsStrings();
 }
 
 void Blinking::detectStartCode(){
@@ -28,7 +30,7 @@ void Blinking::detectStartCode(){
           t = micros();
           if( t - begining >  lambdaAcc){
             time = t;
-            bitRead.value = detectBit();  
+            bitRead.value = readBit();  
             lambdaAcc += lambda;
             //Serial.println(count); //For debugging
             //Serial.println(bitRead); //For debugging
@@ -115,7 +117,7 @@ void Blinking::synchronise(){
  * Data Length = 8 bits; 0000 0000 = 0; 1111 1111 = 255 //Number of groups of data
  * Data Size = 4 bits; 0000 = 0 Byte; 1111 = 15 Bytes // We can change 0000 to be 1 to improve the range
  */
-void Blinking::getHeader(){
+void Blinking::receiveHeader(){
     Bit buf[8]; 
     
     readValues(buf, 12, 0);
@@ -133,7 +135,7 @@ void Blinking::getHeader(){
 /*
  * Get the data transmitted
  */
-void Blinking::getDatas(){
+void Blinking::receiveDatas(){
   int i = 0;
   int lightValue = lightLevel;
 
@@ -143,6 +145,7 @@ void Blinking::getDatas(){
   for (i = 0; i < dataLen*8; i++){//For debbugging
     Serial.print(datas[i].value);
   }
+  Serial.println();
 }
 
 int Blinking::binToDec(Bit* data, int size){
@@ -171,7 +174,11 @@ int Blinking::power(int a, int b){
   return result;  
 }
 
-int Blinking::detectBit(){
+char Blinking::charOfBin(Bit* data, int shift){
+  return (char)binToDec2(data, 8, shift);
+}
+
+int Blinking::readBit(){
   boolean read = false;
   int sum = 0;
   long timer = micros();
@@ -204,10 +211,37 @@ void Blinking::readValues(Bit* buf, int nb, int shifting){
   while (count < nb){
       t = micros();
       if (t - begining >  lambdaAcc){
-        buf[count+shifting].value = detectBit();
+        buf[count+shifting].value = readBit();
         time = t;
         lambdaAcc += lambda;    
         count++; 
      }
   }  
 }
+
+Bit* Blinking::getDatas(){
+  return datas;
+}
+
+void Blinking::printDatasAsStrings(){
+  int index = 0;
+
+  while (index < dataLen*8){
+    int size = 0;
+    while(charOfBin(datas, index+size*8) != '\0'){
+      size++;
+    }
+  
+    char* s = (char*)malloc((size+1)*sizeof(char));
+    for(int i = 0; i < size; i++){
+      s[i] = charOfBin(datas,index+i*8);
+    }
+    s[size] = '\0';
+    
+    Serial.println(s);
+    free(s);
+  
+    index += (size+1)*8;
+  }
+}
+
