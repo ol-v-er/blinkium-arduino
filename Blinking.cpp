@@ -1,6 +1,6 @@
 #include "Blinking.h"
 
-Blinking::Blinking(int sensorPin) : lightsensorPin(sensorPin) {}
+Blinking::Blinking(int sensorPin, int lightThreshold) : lightsensorPin(sensorPin), lightLevel(lightThreshold) {}
 
 void Blinking::listen(){
 	detectStartCode();
@@ -8,7 +8,7 @@ void Blinking::listen(){
 	receiveHeader();
 	receiveDatas();
 
- printDatasAsStrings();
+  printDatasAsStrings();
 }
 
 void Blinking::detectStartCode(){
@@ -71,6 +71,7 @@ void Blinking::synchronise(){
   long t;
   int currentValue = 0;
   int b = 1;
+  long sumOn = 0, sumOff = 0;
   
   while (b != currentValue){
       t = micros();
@@ -84,6 +85,22 @@ void Blinking::synchronise(){
 
   while(a <= sampleSize){
     currentValue = b;
+
+    /*time = micros();
+    t = micros();
+    if (t - time >  3000){
+      time = t;
+      b = analogRead(lightsensorPin) > lightLevel ? 1 : 0;
+    }*/
+    /*Serial.print("Light : ");
+    Serial.println(analogRead(lightsensorPin));*/
+    
+    if(currentValue == 0){
+      sumOff += analogRead(lightsensorPin);
+    }
+    else{
+      sumOn += analogRead(lightsensorPin);
+    }
     while(b == currentValue){
       t = micros();
       if (t - time >  350){
@@ -96,6 +113,11 @@ void Blinking::synchronise(){
 
   sum = (micros()-deb);
 
+  minBrightness = sumOff / (sampleSize / 2);
+  maxBrightness = sumOn / (sampleSize / 2);
+
+  lightLevel = (minBrightness + maxBrightness)/2;
+
   frequency = (double)sampleSize / (sum/1000000.0);
   lambda = 1000000.0/frequency;
 
@@ -103,12 +125,16 @@ void Blinking::synchronise(){
   lambdaAcc = lambda;
   
 
-  Serial.println("Elapsed time");
+  Serial.print("Elapsed time : ");
   Serial.println(micros()-deb);
-  Serial.println("Frequency");
+  Serial.print("Frequency : ");
   Serial.println(frequency);
-
-
+  /*Serial.print("Min Brightness : ");
+  Serial.println(minBrightness);
+  Serial.print("Max Brightness : ");
+  Serial.println(maxBrightness);
+  Serial.print("Gap : ");
+  Serial.println(maxBrightness - minBrightness);*/
   
 }
 

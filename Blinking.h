@@ -9,7 +9,7 @@ typedef struct {
 class Blinking{
 	
 	public :
-		Blinking(int sensorPin);
+		Blinking(int sensorPin, int lightThreshold);
 		void listen();
 		
 	private :
@@ -33,7 +33,9 @@ class Blinking{
 		int lightsensorPin;
 		int sensorValue = 0;
 
-		int lightLevel = 50;
+		int lightLevel;
+    int minBrightness;
+    int maxBrightness;
 
 		long time = 0;
 		long time2 = 0;

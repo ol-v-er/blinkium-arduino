@@ -1,16 +1,11 @@
 #include "Blinking.h"
 
-//Un peu brouillon ici
-//La seule chose qu'il faut regarder est l'objet Blinking
-//Et les 2 fonctions setup et loop.
-
-bool testBrightness = true;
+bool testBrightness = false;
 
 
-Blinking blink(A0);
+Blinking blink(A0, 50);
 
 void setup() {
-  //pinMode(ledPin, OUTPUT);
   Serial.begin(9600);//For debugging
 
   if (!testBrightness)
