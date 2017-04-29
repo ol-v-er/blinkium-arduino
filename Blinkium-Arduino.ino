@@ -3,7 +3,7 @@
 bool testBrightness = false;
 
 
-Blinking blink(A0, 50);
+Blinking blink(A0, 60, 50);
 
 void setup() {
   Serial.begin(9600);//For debugging
