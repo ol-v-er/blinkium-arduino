@@ -25,11 +25,4 @@ static char Utils::charOfBin(Bit* data, int start){
   return (char)Utils::binToDec(data, 8, start);
 }
 
-/*static int Utils::max(int a, int b){
-  return a >= b ? a : b;
-}
-
-static int Utils::min(int a, int b){
-  return a < b ? a : b;
-}*/
 

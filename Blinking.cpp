@@ -8,9 +8,14 @@ void Blinking::listen(){
 	receiveHeader();
 	receiveDatas();
 
-  printDatasAsStrings();
+  //serialPrintDatasAsStrings();
 
-  free(datas);
+}
+
+void Blinking::clear(){
+  for(int i = 0; i < MAX_DATA_LENGTH; i++){
+    datas[i].value = 0;
+  }
 }
 
 void Blinking::detectStartCode(){
@@ -128,14 +133,6 @@ void Blinking::receiveHeader(){
  */
 void Blinking::receiveDatas(){
   readValues(datas, dataLen*8);
-
-  if(DEBUG){
-    Serial.println("Datas Read");
-    for (int i = 0; i < dataLen*8; i++){//For debbugging
-      Serial.print(datas[i].value);
-    }
-    Serial.println();
-  }
 }
 
 int Blinking::readBit(){
@@ -172,9 +169,8 @@ Bit* Blinking::getDatas(){
   return datas;
 }
 
-void Blinking::printDatasAsStrings(){
+void Blinking::serialPrintDatasAsStrings(){
   int index = 0;
-
   while (index < dataLen*8){
     int size = 0;
     while(Utils::charOfBin(datas, index+size*8) != '\0'){
@@ -186,11 +182,22 @@ void Blinking::printDatasAsStrings(){
       s[i] = Utils::charOfBin(datas,index+i*8);
     }
     s[size] = '\0';
+
     
-    Serial.println(s);
+    Serial.print(s);
+    Serial.print('\t');
     free(s);
   
     index += (size+1)*8;
   }
+
+  Serial.println();
+}
+
+void Blinking::serialPrintDatasAsBits(){
+    for (int i = 0; i < dataLen*8; i++){
+      Serial.print(datas[i].value);
+    }
+    Serial.println();
 }
 
