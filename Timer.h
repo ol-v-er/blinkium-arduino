@@ -6,8 +6,8 @@ class Timer{
   public:
     Timer(double period);
     void restart(bool instant);
-    bool nextStep();
-    void update();
+    bool nextStep(); //Did we wait long enough ?
+    void update(); //Go to the next step. Have to be call after entering the current step.
     void setPeriod(double period);
 
   private:

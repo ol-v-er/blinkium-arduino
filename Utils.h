@@ -11,8 +11,6 @@ class Utils{
       static int binToDec(Bit* data, int size, int start);
       static int power(int a, int b);
       static char charOfBin(Bit* data, int shift);
-     /* static int max(int a, int b);
-      static int min(int a, int b); */
 };
 
 

@@ -4,11 +4,9 @@ Blinking::Blinking(int sensorPin, double freq, int lightThreshold) : lightsensor
 
 void Blinking::listen(){
 	detectStartCode();
-  synchronise();
+  synchronize();
 	receiveHeader();
 	receiveDatas();
-
-  //serialPrintDatasAsStrings();
 
 }
 
@@ -30,7 +28,7 @@ void Blinking::detectStartCode(){
           if(timer.nextStep()){
             timer.update();
             bitRead.value = readBit();
-            //If we detect a "1" and there should be a "0", we break out of the loop and restart reading start code from the begenning
+            //If we detect a "1" and there should be a "0", we break out of the loop and restart reading start code from the beginning
             if (startCode[count] == 0 && bitRead.value == 1){
               break;
             }
@@ -54,7 +52,7 @@ void Blinking::detectStartCode(){
   }
 }
 
-void Blinking::synchronise(){
+void Blinking::synchronize(){
   int sampleSize = 100;
   long elapsedTime = 0;
   double count = 1;
@@ -98,8 +96,6 @@ void Blinking::synchronise(){
   timer.restart(false);
 
   if(DEBUG){
-    /*Serial.print("Elapsed time : ");
-    Serial.println(micros()-beginning);*/
     Serial.print("Frequency : ");
     Serial.println(frequency);
     Serial.print("Min Brightness : ");
